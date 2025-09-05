@@ -5,6 +5,7 @@ applications:
         preBuild:
           commands:
             - npm ci
+            - nvm use 20
         build:
           commands:
             - npm run build
