@@ -17,11 +17,10 @@ interface DockItem {
 const dockItems: DockItem[] = [
   { id: 'lightroom', name: 'Adobe Lightroom Classic', iconPath: '/icons/photoshop-lightroom-classic.png', isImage: true },
   { id: 'photoshop', name: 'Adobe Photoshop', iconPath: '/icons/photoshop.png', isImage: true },
-  { id: 'finder', name: 'iMessage', iconPath: '/icons/message.png', isImage: true },
+  { id: 'facetime', name: 'FaceTime', iconPath: '/icons/facetime.png', isImage: true },
   { id: 'safari', name: 'Safari', iconPath: '/icons/safari.png', isImage: true },
-  { id: 'notes', name: 'Notes', iconPath: '/icons/notes.png', isImage: true },
+  { id: 'notes', name: 'About Me', iconPath: '/icons/notes.png', isImage: true },
   { id: 'photos', name: 'Photos', iconPath: '/icons/photo.png', isImage: true },
-  { id: 'contacts', name: 'Contacts', iconPath: '/icons/contact.png', isImage: true },
   { id: 'instagram', name: 'Instagram', iconPath: '/icons/insta.png', isImage: true },
   { id: 'mail', name: 'Mail', iconPath: '/icons/mail.png', isImage: true },
   { id: 'trash', name: 'Trash', iconPath: '/icons/bin.png', isImage: true },
@@ -31,10 +30,10 @@ interface DockProps {
   onLightroomClick?: () => void;
   onPhotoshopClick?: () => void;
   onInstagramClick?: () => void;
-  onContactsClick?: () => void;
+  onNotesClick?: () => void;
 }
 
-const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInstagramClick, onContactsClick }) => {
+const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInstagramClick, onNotesClick }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showMailDropdown, setShowMailDropdown] = useState(false);
   const [showCalPopup, setShowCalPopup] = useState(false);
@@ -130,12 +129,11 @@ const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInsta
       onPhotoshopClick();
     } else if (item.id === 'instagram' && onInstagramClick) {
       onInstagramClick();
-    } else if (item.id === 'contacts') {
+    } else if (item.id === 'facetime') {
       // Open Cal.com popup
       setShowCalPopup(true);
-      if (onContactsClick) {
-        onContactsClick();
-      }
+    } else if (item.id === 'notes' && onNotesClick) {
+      onNotesClick();
     } else if (item.id === 'mail') {
       // Default behavior: show dropdown
       event?.preventDefault();

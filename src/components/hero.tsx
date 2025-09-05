@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import Dock from './dock';
 import DraggablePopup from './draggable-popup';
 import InstagramPopup from '@/components/instagram-popup';
+import AboutPopup from '@/components/about-popup';
 
 const Hero = () => {
   const [isLightroomPopupOpen, setIsLightroomPopupOpen] = useState(false);
   const [isPhotoshopPopupOpen, setIsPhotoshopPopupOpen] = useState(false);
   const [isInstagramPopupOpen, setIsInstagramPopupOpen] = useState(false);
+  const [isAboutPopupOpen, setIsAboutPopupOpen] = useState(false);
 
   const handleLightroomClick = () => {
     setIsLightroomPopupOpen(true);
@@ -20,6 +22,10 @@ const Hero = () => {
 
   const handleInstagramClick = () => {
     setIsInstagramPopupOpen(true);
+  };
+
+  const handleNotesClick = () => {
+    setIsAboutPopupOpen(true);
   };
 
   // Preload Instagram widget when component mounts
@@ -52,6 +58,10 @@ const Hero = () => {
     setIsInstagramPopupOpen(false);
   };
 
+  const handleCloseAboutPopup = () => {
+    setIsAboutPopupOpen(false);
+  };
+
   return (
     <section 
       className="min-h-screen w-full bg-cover bg-center bg-no-repeat relative"
@@ -63,6 +73,7 @@ const Hero = () => {
         onLightroomClick={handleLightroomClick} 
         onPhotoshopClick={handlePhotoshopClick}
         onInstagramClick={handleInstagramClick}
+        onNotesClick={handleNotesClick}
       />
       
       {/* Lightroom Popup */}
@@ -87,6 +98,12 @@ const Hero = () => {
       <InstagramPopup
         isOpen={isInstagramPopupOpen}
         onClose={handleCloseInstagramPopup}
+      />
+      
+      {/* About Popup */}
+      <AboutPopup
+        isOpen={isAboutPopupOpen}
+        onClose={handleCloseAboutPopup}
       />
     </section>
   );

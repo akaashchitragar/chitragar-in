@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import PreloaderWrapper from "@/components/preloader-wrapper";
+import { WindowManagerProvider } from "@/components/window-manager";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,17 +30,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Toaster 
-          position="top-right"
-          richColors
-          closeButton
-          theme="light"
-          toastOptions={{
-            duration: 4000,
-            className: 'sonner-toast',
-          }}
-        />
+        <PreloaderWrapper>
+          <WindowManagerProvider>
+            {children}
+            <Toaster 
+              position="top-right"
+              richColors
+              closeButton
+              theme="light"
+              toastOptions={{
+                duration: 4000,
+                className: 'sonner-toast',
+              }}
+            />
+          </WindowManagerProvider>
+        </PreloaderWrapper>
       </body>
     </html>
   );

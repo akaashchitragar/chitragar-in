@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { useWindowManager } from './window-manager';
 
 interface InstagramPopupProps {
   isOpen: boolean;
@@ -14,8 +15,13 @@ const InstagramPopup: React.FC<InstagramPopupProps> = ({ isOpen, onClose }) => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const popupRef = useRef<HTMLDivElement>(null);
+  const { getZIndex, bringToFront } = useWindowManager();
+  const windowId = 'instagram-popup';
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Bring window to front when clicked
+    bringToFront(windowId);
+    
     if (e.target === popupRef.current || (e.target as HTMLElement).closest('.drag-handle')) {
       setIsDragging(true);
       setDragStart({
@@ -25,22 +31,18 @@ const InstagramPopup: React.FC<InstagramPopupProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
     if (isDragging) {
       setPosition({
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y
       });
     }
-  };
+  }, [isDragging, dragStart.x, dragStart.y]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = React.useCallback(() => {
     setIsDragging(false);
-  };
-
-  const handleOpenInNewTab = () => {
-    window.open('https://www.instagram.com/lenzofsky', '_blank');
-  };
+  }, []);
 
   const handleIframeLoad = () => {
     setIsLoading(false);
@@ -62,12 +64,12 @@ const InstagramPopup: React.FC<InstagramPopupProps> = ({ isOpen, onClose }) => {
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragStart]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] pointer-events-none">
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: getZIndex(windowId) }}>
       <div
         ref={popupRef}
         className="absolute pointer-events-auto"
@@ -81,6 +83,14 @@ const InstagramPopup: React.FC<InstagramPopupProps> = ({ isOpen, onClose }) => {
         <div className="bg-gray-900/95 backdrop-blur-xl rounded-xl border border-gray-600/50 shadow-2xl w-[400px] h-[700px] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="drag-handle flex items-center justify-between p-4 border-b border-gray-600/30 bg-gradient-to-r from-purple-600 to-pink-600 flex-shrink-0">
+            <div className="flex space-x-2">
+              <button
+                onClick={onClose}
+                className="w-3 h-3 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
+              />
+              <button className="w-3 h-3 bg-yellow-500 rounded-full hover:bg-yellow-600 transition-colors" />
+              <button className="w-3 h-3 bg-green-500 rounded-full hover:bg-green-600 transition-colors" />
+            </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 relative overflow-hidden rounded-full">
                 <Image
@@ -94,14 +104,6 @@ const InstagramPopup: React.FC<InstagramPopupProps> = ({ isOpen, onClose }) => {
                 <h3 className="text-white font-semibold text-sm">@lenzofsky</h3>
                 <p className="text-white/70 text-xs">Instagram Profile</p>
               </div>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={onClose}
-                className="w-3 h-3 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
-              />
-              <button className="w-3 h-3 bg-yellow-500 rounded-full hover:bg-yellow-600 transition-colors" />
-              <button className="w-3 h-3 bg-green-500 rounded-full hover:bg-green-600 transition-colors" />
             </div>
           </div>
 
