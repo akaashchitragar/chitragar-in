@@ -116,15 +116,6 @@ const Hero = () => {
         backgroundImage: 'url(/bg-blur.png)'
       }}
     >
-      {/* Website Title */}
-      <div className="absolute top-8 left-8 z-40">
-        <h1 className="text-white text-4xl md:text-5xl font-light tracking-wider drop-shadow-2xl">
-          Chitragar.in
-        </h1>
-        <p className="text-white/80 text-sm md:text-base font-light mt-2 tracking-wide drop-shadow-lg">
-          Portfolio & Photography
-        </p>
-      </div>
 
       <Dock 
         onLightroomClick={handleLightroomClick} 
