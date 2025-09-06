@@ -31,9 +31,10 @@ interface DockProps {
   onPhotoshopClick?: () => void;
   onInstagramClick?: () => void;
   onNotesClick?: () => void;
+  onPhotosClick?: () => void;
 }
 
-const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInstagramClick, onNotesClick }) => {
+const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInstagramClick, onNotesClick, onPhotosClick }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showMailDropdown, setShowMailDropdown] = useState(false);
   const [showCalPopup, setShowCalPopup] = useState(false);
@@ -134,6 +135,8 @@ const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInsta
       setShowCalPopup(true);
     } else if (item.id === 'notes' && onNotesClick) {
       onNotesClick();
+    } else if (item.id === 'photos' && onPhotosClick) {
+      onPhotosClick();
     } else if (item.id === 'mail') {
       // Default behavior: show dropdown
       event?.preventDefault();

@@ -80,9 +80,9 @@ const InstagramPopup: React.FC<InstagramPopupProps> = ({ isOpen, onClose }) => {
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="bg-gray-900/95 backdrop-blur-xl rounded-xl border border-gray-600/50 shadow-2xl w-[400px] h-[700px] flex flex-col overflow-hidden">
+        <div className="bg-gray-900/95 backdrop-blur-xl rounded-xl border border-gray-600/50 shadow-2xl w-[400px] h-[700px] flex flex-col overflow-hidden select-none">
           {/* Header */}
-          <div className="drag-handle flex items-center justify-between p-4 border-b border-gray-600/30 bg-gradient-to-r from-purple-600 to-pink-600 flex-shrink-0">
+          <div className="drag-handle flex items-center justify-between p-2 border-b border-gray-600/30 bg-gradient-to-r from-purple-600 to-pink-600 flex-shrink-0">
             <div className="flex space-x-2">
               <button
                 onClick={onClose}

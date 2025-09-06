@@ -68,9 +68,9 @@ const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="bg-yellow-50/95 backdrop-blur-xl rounded-xl border border-yellow-200/50 shadow-2xl w-[600px] h-[500px] flex flex-col overflow-hidden">
+        <div className="bg-yellow-50/95 backdrop-blur-xl rounded-xl border border-yellow-200/50 shadow-2xl w-[600px] h-[500px] flex flex-col overflow-hidden select-none">
           {/* Header */}
-          <div className="drag-handle flex items-center justify-between p-3 border-b border-yellow-200/30 bg-gradient-to-r from-yellow-400 to-amber-400 flex-shrink-0">
+          <div className="drag-handle flex items-center justify-between p-2 border-b border-yellow-200/30 bg-gradient-to-r from-yellow-400 to-amber-400 flex-shrink-0">
             <div className="flex space-x-2">
               <button
                 onClick={onClose}
@@ -112,11 +112,11 @@ const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
                 </p>
                 
                 <p>
-                  My name is Akash Chitragar, and I&apos;m a young wildlife photographer based in Karnataka, India. Ever since I was 12, I&apos;ve been captivated by the world seen through a lens. Years of dedicated practice and immersive experiences in various Indian wildlife forests have refined my skills, enabling me to capture the stunning beauty and diversity of our natural world.
+                  My name is Akash Chitragar, and I&apos;m a wildlife photographer based in Karnataka, India. Ever since I was 12, I&apos;ve been captivated by the world seen through a lens. Years of dedicated practice and immersive experiences in various Indian wildlife forests have refined my skills, enabling me to capture the stunning beauty and diversity of our natural world.
                 </p>
                 
                 <p>
-                  Beyond my passion for wildlife, I also enjoy exploring urban landscapes and sharing my perspective through Instagram. Feel free to scroll down and take a look at my feed.
+                  Beyond my passion for wildlife, I also enjoy exploring urban landscapes and sharing my perspective through Instagram. Feel free to experience the rest of my website.
                 </p>
                 
                 <p>

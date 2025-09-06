@@ -77,9 +77,9 @@ const DraggablePopup: React.FC<DraggablePopupProps> = ({
         }}
         onMouseDown={handleMouseDown}
       >
-        <div className="bg-gray-800/95 backdrop-blur-xl rounded-xl border border-gray-600/50 shadow-2xl min-w-[320px] max-w-[400px]">
+        <div className="bg-gray-800/95 backdrop-blur-xl rounded-xl border border-gray-600/50 shadow-2xl min-w-[320px] max-w-[400px] select-none">
           {/* Header */}
-          <div className="drag-handle flex items-center justify-between p-4 border-b border-gray-600/30">
+          <div className="drag-handle flex items-center justify-between p-2 border-b border-gray-600/30">
             <div className="flex space-x-2">
               <button
                 onClick={onClose}
