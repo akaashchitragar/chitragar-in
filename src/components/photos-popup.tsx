@@ -96,8 +96,8 @@ const AdaptiveImageSlider: React.FC<AdaptiveImageSliderProps> = ({
     const aspectRatio = width / height;
     
     // Available container space (accounting for padding and UI elements)
-    const maxWidth = 900;  // Increased for larger window
-    const maxHeight = 550; // Increased for larger window
+    const maxWidth = 900;  // Max container width
+    const maxHeight = 550; // Max container height
     
     let orientation: 'portrait' | 'landscape' | 'square';
     let displayWidth: number;
@@ -105,32 +105,32 @@ const AdaptiveImageSlider: React.FC<AdaptiveImageSliderProps> = ({
 
     if (aspectRatio > 1.3) {
       orientation = 'landscape';
-      // For landscape images, fit to width first
+      // For landscape images, use full available width unless image is smaller
       displayWidth = Math.min(maxWidth, width);
       displayHeight = displayWidth / aspectRatio;
       
-      // If height exceeds container, scale down
+      // If height exceeds container, scale down proportionally
       if (displayHeight > maxHeight) {
         displayHeight = maxHeight;
         displayWidth = displayHeight * aspectRatio;
       }
     } else if (aspectRatio < 0.75) {
       orientation = 'portrait';
-      // For portrait images, fit to height first
+      // For portrait images, use full available height unless image is smaller
       displayHeight = Math.min(maxHeight, height);
       displayWidth = displayHeight * aspectRatio;
       
-      // If width exceeds container, scale down
+      // If width exceeds container, scale down proportionally
       if (displayWidth > maxWidth) {
         displayWidth = maxWidth;
         displayHeight = displayWidth / aspectRatio;
       }
     } else {
       orientation = 'square';
-      // For square-ish images, fit to the smaller dimension
-      const maxSize = Math.min(maxWidth, maxHeight);
-      displayWidth = Math.min(maxSize, width);
-      displayHeight = Math.min(maxSize, height);
+      // For square-ish images, fit to container while maintaining aspect ratio
+      const scale = Math.min(maxWidth / width, maxHeight / height, 1); // Don't scale up
+      displayWidth = width * scale;
+      displayHeight = height * scale;
     }
 
     return {
@@ -151,7 +151,7 @@ const AdaptiveImageSlider: React.FC<AdaptiveImageSliderProps> = ({
   if (!currentPhoto) return null;
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center bg-black/20 backdrop-blur-md">
+    <div className="relative w-full h-full flex items-center justify-center bg-black/20 backdrop-blur-md p-4">
       {/* Loading State */}
       {imageLoading && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
@@ -172,14 +172,14 @@ const AdaptiveImageSlider: React.FC<AdaptiveImageSliderProps> = ({
       {/* Image Container */}
       {!imageError && (
         <div 
-          className={`relative transition-all duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+          className={`relative flex items-center justify-center transition-all duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
           style={displayInfo.containerStyle}
         >
           <Image
             src={getOptimizedImageUrl(currentPhoto.cloudinary_public_id, {
-              width: displayInfo.imageStyle.width || 900,
-              height: displayInfo.imageStyle.height || 550,
-              quality: 85, // Optimized quality for faster loading
+              width: Math.max(displayInfo.imageStyle.width || 900, 900),
+              height: Math.max(displayInfo.imageStyle.height || 550, 550),
+              quality: 90, // Higher quality for slideshow viewing
               format: 'webp',
               progressive: true
             })}
@@ -188,7 +188,7 @@ const AdaptiveImageSlider: React.FC<AdaptiveImageSliderProps> = ({
             height={displayInfo.imageStyle.height || 550}
             onLoad={handleImageLoad}
             onError={handleImageError}
-            className="object-contain w-full h-full rounded-lg shadow-2xl"
+            className="object-contain rounded-lg shadow-2xl max-w-full max-h-full"
             priority={true}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 900px"
             placeholder="blur"
