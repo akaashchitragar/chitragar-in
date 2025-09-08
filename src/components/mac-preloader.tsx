@@ -97,9 +97,6 @@ const MacPreloader: React.FC<MacPreloaderProps> = ({ onComplete }) => {
         
         {/* Loading Text */}
         <div className="text-center mt-6">
-          <p className="text-gray-300 text-lg font-light tracking-wider mb-2">
-            Chitragar.in
-          </p>
           <p className="text-gray-400 text-sm font-light tracking-wide">
             Loading...
           </p>

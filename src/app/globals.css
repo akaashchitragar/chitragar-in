@@ -158,6 +158,11 @@
 /* Custom Sonner toast styles */
 .sonner-toast {
   animation: slideInFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.05)) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Override Sonner's exit animation */
@@ -168,6 +173,20 @@
 /* Ensure smooth transitions */
 [data-sonner-toast] {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Style the close button to match */
+[data-sonner-toast] [data-close-button] {
+  background: rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: rgba(0, 0, 0, 0.15) !important;
+  color: rgba(0, 0, 0, 0.9) !important;
 }
 
 /* Custom gradient utilities */

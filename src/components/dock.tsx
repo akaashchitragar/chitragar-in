@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { toast } from 'sonner';
 import CalPopup from './cal-popup';
+import TrashPopup from './trash-popup';
+import MailPopup from './mail-popup';
+import SafariPopup from './safari-popup';
 
 interface DockItem {
   id: string;
@@ -36,94 +38,12 @@ interface DockProps {
 
 const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInstagramClick, onNotesClick, onPhotosClick }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [showMailDropdown, setShowMailDropdown] = useState(false);
   const [showCalPopup, setShowCalPopup] = useState(false);
-  const mailDropdownRef = useRef<HTMLDivElement>(null);
-  const emailAddress = 'akash@chitragar.in';
+  const [showTrashPopup, setShowTrashPopup] = useState(false);
+  const [showMailPopup, setShowMailPopup] = useState(false);
+  const [showSafariPopup, setShowSafariPopup] = useState(false);
 
-  // Platform detection
-  const getPlatform = () => {
-    if (typeof window === 'undefined') return 'unknown';
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    if (/android/.test(userAgent)) return 'android';
-    if (/iphone|ipad|ipod/.test(userAgent)) return 'ios';
-    if (/mac/.test(userAgent)) return 'mac';
-    if (/win/.test(userAgent)) return 'windows';
-    return 'unknown';
-  };
-
-  // Handle mail app opening based on platform
-  const openMailApp = () => {
-    const platform = getPlatform();
-    const mailtoLink = `mailto:${emailAddress}`;
-    
-    switch (platform) {
-      case 'android':
-      case 'ios':
-        // On mobile, try Gmail app first, fallback to default mail
-        const gmailLink = `googlegmail://co?to=${emailAddress}`;
-        try {
-          window.location.href = gmailLink;
-          // Fallback to default mail app after a short delay
-          setTimeout(() => {
-            window.location.href = mailtoLink;
-          }, 500);
-        } catch {
-          window.location.href = mailtoLink;
-        }
-        break;
-      case 'mac':
-      case 'windows':
-      default:
-        // Desktop: open default mail app
-        window.location.href = mailtoLink;
-        break;
-    }
-  };
-
-  // Copy email to clipboard - Simple and reliable method
-  const copyEmailToClipboard = () => {
-    // Create a temporary input element
-    const tempInput = document.createElement('input');
-    tempInput.value = emailAddress;
-    document.body.appendChild(tempInput);
-    
-    // Select and copy the text
-    tempInput.select();
-    tempInput.setSelectionRange(0, 99999); // For mobile devices
-    
-    try {
-      const successful = document.execCommand('copy');
-      if (successful) {
-        toast.success('Email copied to clipboard', {
-          description: emailAddress,
-        });
-      } else {
-        throw new Error('Copy failed');
-      }
-    } catch {
-      toast.error('Failed to copy email');
-    } finally {
-      // Clean up - remove the temporary input
-      document.body.removeChild(tempInput);
-    }
-  };
-
-  // Handle clicks outside dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (mailDropdownRef.current && !mailDropdownRef.current.contains(event.target as Node)) {
-        setShowMailDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleItemClick = (item: DockItem, event?: React.MouseEvent) => {
+  const handleItemClick = (item: DockItem) => {
     if (item.id === 'lightroom' && onLightroomClick) {
       onLightroomClick();
     } else if (item.id === 'photoshop' && onPhotoshopClick) {
@@ -133,14 +53,19 @@ const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInsta
     } else if (item.id === 'facetime') {
       // Open Cal.com popup
       setShowCalPopup(true);
+    } else if (item.id === 'safari') {
+      // Open Safari popup with approved feedbacks
+      setShowSafariPopup(true);
     } else if (item.id === 'notes' && onNotesClick) {
       onNotesClick();
     } else if (item.id === 'photos' && onPhotosClick) {
       onPhotosClick();
     } else if (item.id === 'mail') {
-      // Default behavior: show dropdown
-      event?.preventDefault();
-      setShowMailDropdown(!showMailDropdown);
+      // Open mail popup
+      setShowMailPopup(true);
+    } else if (item.id === 'trash') {
+      // Open feedback trash popup
+      setShowTrashPopup(true);
     }
   };
 
@@ -158,7 +83,7 @@ const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInsta
               className="relative flex items-center justify-center cursor-pointer w-14 h-14"
               onMouseEnter={() => setHoveredItem(item.id)}
               onMouseLeave={() => setHoveredItem(null)}
-              onClick={(event) => handleItemClick(item, event)}
+              onClick={() => handleItemClick(item)}
             >
               {item.isImage && item.iconPath ? (
                 <div className={`
@@ -189,61 +114,9 @@ const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInsta
               )}
               
               {/* Tooltip */}
-              {isHovered && !showMailDropdown && (
+              {isHovered && (
                 <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gray-800/90 text-white text-xs rounded-md whitespace-nowrap backdrop-blur-sm">
                   {item.name}
-                </div>
-              )}
-
-              {/* Mail Dropdown Menu */}
-              {item.id === 'mail' && showMailDropdown && (
-                <div 
-                  ref={mailDropdownRef}
-                  className="absolute -top-32 left-0 w-48 bg-white/95 backdrop-blur-xl rounded-xl border border-gray-200/50 shadow-2xl overflow-hidden z-60"
-                  style={{
-                    animation: 'fadeInUp 0.2s ease-out'
-                  }}
-                >
-                  <div className="py-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openMailApp();
-                        setShowMailDropdown(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors duration-150 flex items-center space-x-3"
-                    >
-                      <div className="w-4 h-4 bg-blue-500 rounded-sm flex items-center justify-center">
-                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                        </svg>
-                      </div>
-                      <span>Open Mail App</span>
-                    </button>
-                    
-                    <div className="border-t border-gray-200/50 my-1"></div>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        copyEmailToClipboard();
-                        setShowMailDropdown(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 flex items-center space-x-3"
-                    >
-                      <div className="w-4 h-4 bg-gray-500 rounded-sm flex items-center justify-center">
-                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                          <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <div>Copy Email Address</div>
-                        <div className="text-xs text-gray-500">{emailAddress}</div>
-                      </div>
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
@@ -256,6 +129,24 @@ const Dock: React.FC<DockProps> = ({ onLightroomClick, onPhotoshopClick, onInsta
       <CalPopup 
         isOpen={showCalPopup} 
         onClose={() => setShowCalPopup(false)} 
+      />
+      
+      {/* Trash Feedback Popup */}
+      <TrashPopup 
+        isOpen={showTrashPopup} 
+        onClose={() => setShowTrashPopup(false)} 
+      />
+      
+      {/* Mail Popup */}
+      <MailPopup 
+        isOpen={showMailPopup} 
+        onClose={() => setShowMailPopup(false)} 
+      />
+      
+      {/* Safari Popup */}
+      <SafariPopup 
+        isOpen={showSafariPopup} 
+        onClose={() => setShowSafariPopup(false)} 
       />
     </>
   );

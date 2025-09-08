@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Cal, { getCalApi } from "@calcom/embed-react";
 import { useWindowManager } from './window-manager';
+import { getCenterPosition } from '@/lib/utils';
 
 interface CalPopupProps {
   isOpen: boolean;
@@ -11,10 +12,12 @@ interface CalPopupProps {
 
 const CalPopup: React.FC<CalPopupProps> = ({ isOpen, onClose }) => {
   const [calLoaded, setCalLoaded] = useState(false);
-  const [position, setPosition] = useState({ x: 200, y: 50 });
+  const [position, setPosition] = useState(() => getCenterPosition(800, 600));
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
   const { getZIndex, bringToFront } = useWindowManager();
   const windowId = 'cal-popup';
@@ -22,6 +25,12 @@ const CalPopup: React.FC<CalPopupProps> = ({ isOpen, onClose }) => {
   const handleMouseDown = (e: React.MouseEvent) => {
     // Bring window to front when clicked
     bringToFront(windowId);
+    
+    // Don't start dragging if clicking on close button or other interactive elements
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'BUTTON' || target.closest('button')) {
+      return;
+    }
     
     if (e.target === popupRef.current || (e.target as HTMLElement).closest('.drag-handle')) {
       setIsDragging(true);
@@ -75,23 +84,43 @@ const CalPopup: React.FC<CalPopupProps> = ({ isOpen, onClose }) => {
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  if (!isOpen) return null;
+  // Handle animation states
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      // Small delay to ensure DOM is ready before animating
+      const timer = setTimeout(() => setIsAnimating(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setIsAnimating(false);
+      // Keep rendered during close animation
+      const timer = setTimeout(() => setShouldRender(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none" style={{ zIndex: getZIndex(windowId) }}>
       <div
         ref={popupRef}
-        className="absolute pointer-events-auto"
+        className={`absolute pointer-events-auto ${
+          isDragging ? '' : 'transition-all duration-200 ease-out'
+        } ${
+          isAnimating || isDragging
+            ? 'opacity-100 scale-100 translate-y-0' 
+            : 'opacity-0 scale-95 translate-y-2'
+        }`}
         style={{
           left: `${position.x}px`,
-          top: `${position.y}px`,
-          cursor: isDragging ? 'grabbing' : 'grab'
+          top: `${position.y}px`
         }}
         onMouseDown={handleMouseDown}
       >
         <div className="bg-gray-900/95 backdrop-blur-xl rounded-xl border border-gray-600/50 shadow-2xl w-[800px] h-[600px] flex flex-col overflow-hidden select-none">
           {/* Header */}
-          <div className="drag-handle flex items-center justify-between p-2 border-b border-gray-600/30 bg-gradient-to-r from-green-600 to-emerald-600 flex-shrink-0">
+          <div className="drag-handle flex items-center justify-between p-2 border-b border-gray-600/30 bg-gradient-to-r from-green-600 to-emerald-600 flex-shrink-0" style={{ cursor: isDragging ? 'grabbing' : 'grab' }}>
             <div className="flex space-x-2">
               <button
                 onClick={onClose}
