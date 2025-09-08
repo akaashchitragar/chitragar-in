@@ -12,16 +12,6 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ['cloudinary'],
-  experimental: {
-    // Increase body size limit for API routes (AWS Amplify limit is 6MB)
-    serverComponentsExternalPackages: ['cloudinary'],
-  },
-  // Configure API route body size limit
-  api: {
-    bodyParser: {
-      sizeLimit: '6mb',
-    },
-  },
 };
 
 export default nextConfig;
