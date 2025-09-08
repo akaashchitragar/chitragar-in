@@ -11,6 +11,7 @@ export const getOptimizedImageUrl = (
     format?: 'auto' | 'webp' | 'jpg' | 'png'
     crop?: 'fill' | 'fit' | 'scale' | 'crop' | 'thumb'
     gravity?: 'auto' | 'face' | 'center' | 'north' | 'south' | 'east' | 'west'
+    progressive?: boolean
   } = {}
 ) => {
   // Validate publicId first
@@ -25,7 +26,8 @@ export const getOptimizedImageUrl = (
     quality = 'auto',
     format = 'auto',
     crop = 'fill',
-    gravity = 'auto'
+    gravity = 'auto',
+    progressive = true
   } = options;
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -42,6 +44,7 @@ export const getOptimizedImageUrl = (
   if (format) transformations.push(`f_${format}`);
   if (crop) transformations.push(`c_${crop}`);
   if (gravity && crop !== 'scale') transformations.push(`g_${gravity}`);
+  if (progressive) transformations.push('fl_progressive');
 
   const transformString = transformations.length > 0 ? `${transformations.join(',')}` : '';
   

@@ -179,8 +179,9 @@ const AdaptiveImageSlider: React.FC<AdaptiveImageSliderProps> = ({
             src={getOptimizedImageUrl(currentPhoto.cloudinary_public_id, {
               width: displayInfo.imageStyle.width || 900,
               height: displayInfo.imageStyle.height || 550,
-              quality: 100, // Set to 100% quality as requested
-              format: 'auto'
+              quality: 85, // Optimized quality for faster loading
+              format: 'webp',
+              progressive: true
             })}
             alt={currentPhoto.alt_text || currentPhoto.title || `Photo ${currentIndex + 1}`}
             width={displayInfo.imageStyle.width || 900}
@@ -189,7 +190,9 @@ const AdaptiveImageSlider: React.FC<AdaptiveImageSliderProps> = ({
             onError={handleImageError}
             className="object-contain w-full h-full rounded-lg shadow-2xl"
             priority={true}
-            sizes={`${displayInfo.imageStyle.width || 900}px`}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 900px"
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
           />
         </div>
       )}
@@ -254,6 +257,7 @@ const PhotosPopup: React.FC<PhotosPopupProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
 
   // Dragging functionality
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -337,6 +341,38 @@ const PhotosPopup: React.FC<PhotosPopupProps> = ({ isOpen, onClose }) => {
   const toggleAutoplay = useCallback(() => {
     setIsAutoplay(!isAutoplay);
   }, [isAutoplay]);
+
+  // Preload adjacent images for smoother slideshow navigation
+  useEffect(() => {
+    if (isSlideshow && photos.length > 1) {
+      const preloadImage = (publicId: string) => {
+        if (!preloadedImages.has(publicId)) {
+          const img = new window.Image();
+          img.src = getOptimizedImageUrl(publicId, {
+            width: 900,
+            height: 550,
+            quality: 85,
+            format: 'webp',
+            progressive: true
+          });
+          img.onload = () => {
+            setPreloadedImages(prev => new Set(prev).add(publicId));
+          };
+        }
+      };
+
+      // Preload next and previous images
+      const nextIndex = (currentPhotoIndex + 1) % photos.length;
+      const prevIndex = currentPhotoIndex === 0 ? photos.length - 1 : currentPhotoIndex - 1;
+      
+      if (photos[nextIndex]) {
+        preloadImage(photos[nextIndex].cloudinary_public_id);
+      }
+      if (photos[prevIndex]) {
+        preloadImage(photos[prevIndex].cloudinary_public_id);
+      }
+    }
+  }, [isSlideshow, currentPhotoIndex, photos, preloadedImages]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -648,11 +684,15 @@ const PhotosPopup: React.FC<PhotosPopupProps> = ({ isOpen, onClose }) => {
                                   src={getOptimizedImageUrl(album.cover_public_id, {
                                     width: 300,
                                     height: 300,
-                                    crop: 'fill'
+                                    crop: 'fill',
+                                    quality: 'auto',
+                                    format: 'webp'
                                   })}
                                   alt={album.name}
                                   fill
                                   className="object-cover group-hover:scale-105 transition-transform duration-200"
+                                  loading="lazy"
+                                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                                   onError={(e) => {
                                     console.warn('Failed to load album cover image:', album.cover_public_id);
                                     e.currentTarget.style.display = 'none';
@@ -690,11 +730,15 @@ const PhotosPopup: React.FC<PhotosPopupProps> = ({ isOpen, onClose }) => {
                               src={getOptimizedImageUrl(photo.cloudinary_public_id, {
                                 width: 200,
                                 height: 200,
-                                crop: 'fill'
+                                crop: 'fill',
+                                quality: 'auto',
+                                format: 'webp'
                               })}
                               alt={photo.alt_text || photo.title || `Photo ${index + 1}`}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-200"
+                              loading="lazy"
+                              sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 16vw"
                               onError={() => {
                                 console.warn('Failed to load photo thumbnail:', photo.cloudinary_public_id);
                               }}
