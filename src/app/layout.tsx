@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     description: 'Welcome to Chitragar.in - A creative portfolio showcasing photography, design, and digital artistry. Explore stunning visual work and creative projects.',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/opengraph.jpg',
         width: 1200,
         height: 630,
         alt: 'Chitragar.in - Portfolio & Photography',
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Chitragar.in - Portfolio & Photography',
     description: 'Welcome to Chitragar.in - A creative portfolio showcasing photography, design, and digital artistry.',
-    images: ['/og-image.jpg'],
+    images: ['/opengraph.jpg'],
     creator: '@chitragar',
   },
   verification: {
