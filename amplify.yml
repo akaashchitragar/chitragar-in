@@ -15,4 +15,9 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
-      - .next/cache/**/* 
+      - .next/cache/**/*
+  customHeaders:
+    - pattern: '/api/**'
+      headers:
+        - key: 'x-amplify-max-request-size'
+          value: '6291456' # 6MB in bytes 

@@ -72,6 +72,77 @@ export const getResponsiveImageUrls = (publicId: string) => {
   };
 };
 
+// Helper function to compress image if it's too large
+const compressImage = (file: File, maxSizeBytes: number = 5 * 1024 * 1024): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    if (file.size <= maxSizeBytes) {
+      resolve(file);
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    img.onload = () => {
+      // Calculate new dimensions to reduce file size
+      let { width, height } = img;
+      const maxDimension = 1920; // Max width or height
+
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = (height * maxDimension) / width;
+          width = maxDimension;
+        } else {
+          width = (width * maxDimension) / height;
+          height = maxDimension;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Try different quality levels to get under the size limit
+      let quality = 0.8;
+      const tryCompress = () => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to compress image'));
+              return;
+            }
+
+            if (blob.size <= maxSizeBytes || quality <= 0.1) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              quality -= 0.1;
+              tryCompress();
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+
+      tryCompress();
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image for compression'));
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 // Client-side upload function (using our API route)
 export const uploadToCloudinaryClient = async (
   file: File
@@ -83,29 +154,49 @@ export const uploadToCloudinaryClient = async (
   format: string;
   bytes: number;
 }> => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('folder', 'photo-gallery');
+  try {
+    // Compress the image if it's too large
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const processedFile = await compressImage(file, maxSize);
 
-  const response = await fetch('/api/cloudinary/upload', {
-    method: 'POST',
-    body: formData,
-  });
+    const formData = new FormData();
+    formData.append('file', processedFile);
+    formData.append('folder', 'photo-gallery');
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Cloudinary upload failed:', response.status, errorText);
-    throw new Error(`Failed to upload to Cloudinary: ${response.status} ${errorText}`);
+    const response = await fetch('/api/cloudinary/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Cloudinary upload failed:', response.status, errorText);
+      
+      // Parse error message from server
+      let errorMessage = 'Failed to upload image';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // If parsing fails, use the raw text or default message
+        errorMessage = errorText || errorMessage;
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const result = await response.json();
+    
+    return {
+      public_id: result.public_id,
+      secure_url: result.secure_url,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      bytes: result.bytes,
+    };
+  } catch (error) {
+    console.error('Upload error:', error);
+    throw error;
   }
-
-  const result = await response.json();
-  
-  return {
-    public_id: result.public_id,
-    secure_url: result.secure_url,
-    width: result.width,
-    height: result.height,
-    format: result.format,
-    bytes: result.bytes,
-  };
 };

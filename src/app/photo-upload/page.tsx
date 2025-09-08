@@ -1221,7 +1221,7 @@ const PhotoUploadManager = () => {
                 Click to select photos or drag and drop
               </p>
               <p className="text-sm text-gray-500">
-                Supports all image formats • No size limits
+                Supports all image formats • Large images will be automatically compressed
               </p>
             </div>
             {uploadingCount > 0 ? (
@@ -1234,7 +1234,7 @@ const PhotoUploadManager = () => {
             ) : (
               <div className="text-center mt-6">
                 <p className="text-sm text-green-600">
-                  Ready to upload photos • Multiple files supported
+                  Ready to upload photos • Multiple files supported • Auto-compression enabled
                 </p>
               </div>
             )}

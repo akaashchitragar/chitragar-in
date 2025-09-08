@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 
+// Configure the API route for larger file uploads
+export const runtime = 'nodejs';
+export const maxDuration = 30; // 30 seconds timeout
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -9,6 +13,14 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    // Check file size (AWS Amplify has a 6MB limit for API routes)
+    const maxSize = 5 * 1024 * 1024; // 5MB to be safe
+    if (file.size > maxSize) {
+      return NextResponse.json({ 
+        error: 'File too large. Please compress the image or use a smaller file (max 5MB).' 
+      }, { status: 413 });
     }
 
     // Convert file to buffer
